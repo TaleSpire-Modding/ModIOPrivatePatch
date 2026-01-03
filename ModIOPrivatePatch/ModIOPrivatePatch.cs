@@ -15,7 +15,7 @@ namespace Miop
     [BepInPlugin(Guid, Name, Version)]
     [BepInDependency(SetInjectionFlag.Guid)]
     [BepInDependency(RPCPlugin.RPCPlugin.Guid)]
-    public class ModIOPrivatePatch : BaseUnityPlugin
+    public class ModIOPrivatePatch : DependencyUnityPlugin
     {
         // Plugin info
         public const string Name = "MOP (Mod IO Private Patch)";
@@ -33,41 +33,35 @@ namespace Miop
 
         internal static string LocalHidden { get; set; }
 
+        Harmony harmony;
+
         /// <summary>
         /// Method triggered when the plugin loads
         /// </summary>
-        public void Awake()
+        protected override void OnAwake()
         {
             InternalLogger = Logger;
             Logger.LogInfo($"In Awake for {Name}");
-            Harmony harmony = new Harmony(Guid);
-            DoConfig(Config);
-            harmony.PatchAll();
-        }
+            harmony = new Harmony(Guid);
 
-        /// <summary>
-        /// Establishes the config for the plugin,
-        /// </summary>
-        /// <param name="config">Configfile regarding the specific plugin</param>
-        public void DoConfig(ConfigFile config)
-        {
-            WhiteList = config.Bind("Author Filtering", "Auto-Subscribe", string.Empty);
-            BlackList = config.Bind("Author Filtering", "Ignore", string.Empty);
+            WhiteList = Config.Bind("Author Filtering", "Auto-Subscribe", string.Empty);
+            BlackList = Config.Bind("Author Filtering", "Ignore", string.Empty);
             SubscribedAuthors = WhiteList.Value.Split(",").ToHashSet();
             IgnoredAuthors = BlackList.Value.Split(",").ToHashSet();
 
-            LocalHidden = Path.Join(Path.GetDirectoryName(Info.Location),".hidden");
+            LocalHidden = Path.Join(Path.GetDirectoryName(Info.Location), ".hidden");
 
             // Start importing all other hidden/private minis
             string[] files = Directory.GetFiles(Path.GetDirectoryName(Info.Location), "*.hidden");
             if (files.Any())
             {
-                foreach (string file in files.Where(f => f != LocalHidden)) {
+                foreach (string file in files.Where(f => f != LocalHidden))
+                {
                     foreach (KeyValuePair<long, ModProfile> profile in JsonConvert.DeserializeObject<Dictionary<long, ModProfile>>(File.ReadAllText(file)))
                     {
                         ModIOUnityAsyncGetCurrentUserCreationsPatch.importing[profile.Key] = profile.Value;
                     }
-                } 
+                }
             }
 
             // Cache my hidden files
@@ -75,8 +69,26 @@ namespace Miop
             {
                 ModIOUnityAsyncGetCurrentUserCreationsPatch.myPrivateMods = JsonConvert.DeserializeObject<Dictionary<long, ModProfile>>(File.ReadAllText(LocalHidden));
             }
+
+            harmony.PatchAll();
         }
 
-        
+        protected override void OnDestroyed()
+        {
+            harmony.UnpatchSelf();
+
+            SubscribedAuthors = null;
+            IgnoredAuthors = null;
+            LocalHidden = null;
+
+            ModIOUnityAsyncGetCurrentUserCreationsPatch.importing.Clear();
+            ModIOUnityAsyncGetCurrentUserCreationsPatch.myPrivateMods.Clear();
+            ModIOUnityAsyncGetCurrentUserCreationsPatch.addedPages.Clear();
+            ModIOUnityAsyncGetCurrentUserCreationsPatch.modsPaginationProxy.Clear();
+            ModIOUnityAsyncGetCurrentUserCreationsPatch.MyRepoUserName = null;
+
+            ModIOUnityAsyncGetModsPatch.mods.Clear();
+            ModIOUnityAsyncGetModsPatch.addedPages.Clear();
+        }
     }
 }

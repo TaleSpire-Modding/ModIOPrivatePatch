@@ -12,8 +12,8 @@ namespace Miop.Patches
     [HarmonyPatch(typeof(ModIOUnityAsync), nameof(ModIOUnityAsync.GetMods))]
     internal class ModIOUnityAsyncGetModsPatch
     {
-        private static List<ModProfile> mods = new List<ModProfile>();
-        private static HashSet<int> addedPages = new HashSet<int>();
+        internal static List<ModProfile> mods = new List<ModProfile>();
+        internal static HashSet<int> addedPages = new HashSet<int>();
         
         public static void Prefix(ref SearchFilter filter, ref Task<ResultAnd<ModPage>> __result)
         {
@@ -56,7 +56,7 @@ namespace Miop.Patches
     {
         internal static Dictionary<long,ModProfile> myPrivateMods = new Dictionary<long,ModProfile>();
         internal static Dictionary<long, ModProfile> importing = new Dictionary<long, ModProfile>();
-        private static HashSet<int> addedPages = new HashSet<int>();
+        internal static HashSet<int> addedPages = new HashSet<int>();
 
         internal static List<ModProfile> modsPaginationProxy = new List<ModProfile>();
 
