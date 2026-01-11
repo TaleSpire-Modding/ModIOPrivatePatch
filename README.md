@@ -8,6 +8,7 @@ Upon entering a campaign, open the asset browser. Then navigate Community Conten
 By clicking on the selected mini, all players currently present will start downloading the minis as if they have subscribed to the mini even though it may be private. Time taken will be dependent on internet speed & download size. Once completed, the minis will be available in the Content Subscribtion Tab where you can also unsubscribe from them.
 
 ## Changelog
+- 1.2.1: migrate to DependencyUnityPlugins<T> to allow enable/disable the plugin without uninstalling it via chainloader
 - 1.2.0: DependencyUnityPlugins is now used and implement logic for unpatching.
 - 1.1.0: Bug fix and re-release plus official Repository uploaded (Spent more time linting than fixing)
 - 1.0.0: Released on Thunderstore

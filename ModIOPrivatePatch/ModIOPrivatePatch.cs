@@ -15,7 +15,7 @@ namespace Miop
     [BepInPlugin(Guid, Name, Version)]
     [BepInDependency(SetInjectionFlag.Guid)]
     [BepInDependency(RPCPlugin.RPCPlugin.Guid)]
-    public class ModIOPrivatePatch : DependencyUnityPlugin
+    public class ModIOPrivatePatch : DependencyUnityPlugin<ModIOPrivatePatch>
     {
         // Plugin info
         public const string Name = "MOP (Mod IO Private Patch)";
@@ -35,6 +35,12 @@ namespace Miop
 
         Harmony harmony;
 
+        protected override void OnSetupConfig(ConfigFile config)
+        {
+            WhiteList = config.Bind("Author Filtering", "Auto-Subscribe", string.Empty);
+            BlackList = config.Bind("Author Filtering", "Ignore", string.Empty);
+        }
+
         /// <summary>
         /// Method triggered when the plugin loads
         /// </summary>
@@ -44,8 +50,6 @@ namespace Miop
             Logger.LogInfo($"In Awake for {Name}");
             harmony = new Harmony(Guid);
 
-            WhiteList = Config.Bind("Author Filtering", "Auto-Subscribe", string.Empty);
-            BlackList = Config.Bind("Author Filtering", "Ignore", string.Empty);
             SubscribedAuthors = WhiteList.Value.Split(",").ToHashSet();
             IgnoredAuthors = BlackList.Value.Split(",").ToHashSet();
 
@@ -75,7 +79,7 @@ namespace Miop
 
         protected override void OnDestroyed()
         {
-            harmony.UnpatchSelf();
+            harmony?.UnpatchSelf();
 
             SubscribedAuthors = null;
             IgnoredAuthors = null;
